@@ -13,8 +13,8 @@ class LazyInterface:
 
     def __init__(self):
         self.currency_pair = None
-        self.buy_pair = 'BTC'
-        self.sell_pair = 'ETH'
+        self.buy_pair = None
+        self.sell_pair = None
         self.menu_actions = {
             'main_menu': self.main_menu,
             '1': self.sell_order_form,
