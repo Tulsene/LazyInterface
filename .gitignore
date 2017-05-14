@@ -1,0 +1,10 @@
+# gitignore
+
+.idea/*
+.workspace
+
+LazyInterface.pyc
+apiInterface.pyc
+poloniex.pyc
+*.log
+start.sh
