@@ -158,7 +158,7 @@ class ApiInterface:
         Return result.
         """
         try:
-            result = poloniex.sell(currency_pair, rate, amount)
+            result = poloniex.marginSell(currency_pair, rate, amount)
 
             log = 'set_margin_sell_order(', currency_pair, ', ', rate, ', ', amount, ') : ', result
             logging.warning(log)
@@ -283,7 +283,7 @@ class ApiInterface:
         Return result.
         """
         try:
-            result = poloniex.buy(currency_pair, rate, amount)
+            result = poloniex.marginBuy(currency_pair, rate, amount)
 
             log = 'set_margin_buy_order(', currency_pair, ', ', rate, ', ', amount, ') : ', result
             logging.warning(log)

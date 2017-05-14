@@ -17,8 +17,8 @@ class LazyInterface:
         self.sell_pair = None
         self.menu_actions = {
             'main_menu': self.main_menu,
-            '1': self.sell_order_form,
-            '2': self.buy_order_form,
+            '1': self.main_sell,
+            '2': self.main_buy,
             '3': self.get_order_book,
             '4': self.get_user_orders,
             '5': self.main_balances,
@@ -27,6 +27,27 @@ class LazyInterface:
             '8': self.set_sell_pair,
             '9': self.back,
             '0': self.exit,
+        }
+        self.menu_sell = {
+            'main_sell': self.main_sell,
+            '1': self.sell_order_form,
+            '2': self.margin_sell_order_form,
+            '9': self.back,
+            '0': self.exit,
+        }
+        self.menu_buy = {
+            'main_buy': self.main_buy,
+            '1': self.buy_order_form,
+            '2': self.margin_buy_order_form,
+            '9': self.back,
+            '0': self.exit,
+        }
+        self.menu_balances = {
+            'main_balances': self.main_balances,
+            '1' : self.market_balances,
+            '2' : self.account_balances,
+            '9' : self.back,
+            '0' : self.exit,
         }
         self.menu_cancel = {
             'main_cancel': self.main_cancel,
@@ -37,19 +58,14 @@ class LazyInterface:
             '9': self.back,
             'O': self.exit,
         }
-        self.menu_balances = {
-            'main_balances': self.main_balances,
-            '1' : self.market_balances,
-            '2' : self.account_balances,
-            '9' : self.back,
-            '0' : self.exit
-        }
+        
         self.buy_pairs = ['BTC', 'ETH', 'XMR', 'USDT']
         self.sell_pairs = ['AMP', 'ARDR', 'BCN', 'BCY', 'BELA', 'BLK', 'BTCD', 'BTM', 'BTS', 'BURST', 'CLAM', 'DASH', 'DCR', \
                            'DGB', 'DOGE', 'EMC2', 'ETC', 'ETH', 'EXP', 'FCT', 'FLDC', 'FLO', 'GAME', 'GNO', 'GNT', 'GRC', \
                            'HUC', 'LBC', 'LSK', 'LTC', 'MAID', 'NAUT', 'NAV', 'NEOS', 'NMC', 'NOTE', 'NXC', 'OMNI', 'PASC', \
                            'PINK', 'POT', 'PPC', 'RADS', 'REP', 'RIC', 'SBD', 'SC', 'SJCX', 'STEEM', 'STR', 'STRAT', 'SYS', \
                            'VIA', 'VRC', 'VTC', 'XBC', 'XCP', 'XEM', 'XMR', 'XRP', 'XVC' 'ZEC']
+        self.margin_sell_pairs = ['BTS', 'CLAM', 'DASH', 'DOGE', 'ETH', 'FCT', 'LTC', 'MAID', 'STR', 'XMR', 'XRP']
         self.stop_signal = False
 
     def main(self):
@@ -67,16 +83,12 @@ class LazyInterface:
         else:
             self.set_currency_pair()
 
-        return
-
     # Main menu
     def main_menu(self):
         while self.stop_signal == False:
             print "Choose an action :\n1. Sell, 2. Buy, 3. Get Order Book, 4. Get Orders, 5. Get Balances, 6. Cancel order menu 7. Set buy Pair, 8. Set sell pair , 0. Exit"
             choice = raw_input(" >>  ")
             self.exec_menu(choice)
-         
-        return
 
     # Execute menu
     def exec_menu(self, choice):
@@ -89,7 +101,20 @@ class LazyInterface:
             except KeyError:
                 print "Invalid selection, please try again.\n"
                 self.menu_actions['main_menu']()
-        return
+
+    def main_sell(self):
+        print "Kind of sell order : 1. Normal, 2. Margin, 9. Back to main menu , 0. Exit"
+        choice = raw_input(" >>  ")
+        ch = choice.lower()
+
+        if ch == '':
+            self.menu_sell['main_sell']()
+        else:
+            try:
+                self.menu_sell[ch]()
+            except KeyError:
+                print "Invalid selection, please try again.\n"
+                self.menu_sell['main_sell']()
 
     def sell_order_form(self):
         self.sell_order_sentence()
@@ -97,7 +122,31 @@ class LazyInterface:
         price = self.choose_price()
         rsp = api.set_sell_order(self.currency_pair, price, amount)
 
-        return
+    def margin_sell_order_form(self):
+        if self.buy_pair != 'BTC':
+            self.buy_pair = 'BTC'
+
+        if self.sell_pair not in self.margin_sell_pairs:
+            self.set_margin_sell_pair()
+
+        self.margin_sell_order_sentence()
+        amount = self.choose_amount()
+        price = self.choose_price()
+        rsp = api.set_margin_sell_order(self.currency_pair, price, amount)
+
+    def main_buy(self):
+        print "Kind of buy order : 1. Normal, 2. Margin, 9. Back to main menu , 0. Exit"
+        choice = raw_input(" >>  ")
+        ch = choice.lower()
+
+        if ch == '':
+            self.menu_buy['main_buy']()
+        else:
+            try:
+                self.menu_buy[ch]()
+            except KeyError:
+                print "Invalid selection, please try again.\n"
+                self.menu_buy['main_buy']()
 
     def buy_order_form(self):
         self.buy_order_sentence()
@@ -105,12 +154,23 @@ class LazyInterface:
         price = self.choose_price()
         rsp = api.set_buy_order(self.currency_pair, price, amount)
 
-        return
+    def margin_buy_order_form(self):
+         if self.buy_pair != 'BTC':
+            self.buy_pair = 'BTC'
+
+        if self.sell_pair not in self.margin_sell_pairs:
+            self.set_margin_sell_pair()
+            
+        self.margin_buy_order_sentence()
+        amount = self.choose_amount()
+        price = self.choose_price()
+        rsp = api.set_margin_buy_order(self.currency_pair, price, amount)
 
     def choose_amount(self):
         try:
             print "Set an amount of ", self.sell_pair, " :"
             choice = float(raw_input(" >>  "))
+            print choice
             return choice
         except ValueError:
             print("That's not a float!")
@@ -119,6 +179,7 @@ class LazyInterface:
         try:
             print "Set the price in ", self.buy_pair, " :"
             choice = float(raw_input(" >>  "))
+            print choice
             return choice
         except ValueError:
             print("That's not a float!")
@@ -264,11 +325,8 @@ class LazyInterface:
         if self.sell_pair == None:
             self.set_sell_pair()
 
-        return
-
-
     def set_sell_pair(self):
-        print "Choose the buy pair (", self.sell_pairs, ")"
+        print "Choose the sel pair (", self.sell_pairs, ")"
         choice = raw_input(" >>  ")
         choice = choice.upper()
         
@@ -277,7 +335,17 @@ class LazyInterface:
         else:
             self.set_sell_pair()
         self.set_currency_pair()
-        return
+
+    def set_margin_sell_pair(self):
+        print "Choose the margin sell pair (", self.margin_sell_pairs, ")"
+        choice = raw_input(" >>  ")
+        choice = choice.upper()
+        
+        if choice in self.margin_sell_pairs:
+            self.sell_pair = choice
+        else:
+            self.set_margin_sell_pair()
+        self.set_currency_pair()
 
     def set_currency_pair(self):
         self.currency_pair = self.buy_pair, "_", self.sell_pair
@@ -292,8 +360,8 @@ class LazyInterface:
      
     # Exit program
     def exit(self):
-        self.sys.exit()
         self.stop_signal = True
+        self.sys.exit()
 
     def sell_order_sentence(self):
         print "------------------------------------------------------------------------------------------------------------------------"
@@ -303,6 +371,16 @@ class LazyInterface:
     def buy_order_sentence(self):
         print "------------------------------------------------------------------------------------------------------------------------"
         print "                                                 BUY ORDERS                                                             "
+        print "------------------------------------------------------------------------------------------------------------------------"
+
+    def margin_sell_order_sentence(self):
+        print "------------------------------------------------------------------------------------------------------------------------"
+        print "                                             MARGIN SELL ORDERS                                                         "
+        print "------------------------------------------------------------------------------------------------------------------------"
+
+    def margin_buy_order_sentence(self):
+        print "------------------------------------------------------------------------------------------------------------------------"
+        print "                                              MARGIN BUY ORDERS                                                             "
         print "------------------------------------------------------------------------------------------------------------------------"
 
     def asks_bids_sentence(self):
