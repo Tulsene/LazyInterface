@@ -13,8 +13,8 @@ class LazyInterface:
 
     def __init__(self):
         self.currency_pair = None
-        self.buy_pair = None
-        self.sell_pair = None
+        self.buy_pair = 'ETH'
+        self.sell_pair = 'REP'
         self.menu_actions = {
             'main_menu': self.main_menu,
             '1': self.main_sell,
@@ -60,11 +60,14 @@ class LazyInterface:
         }
         
         self.buy_pairs = ['BTC', 'ETH', 'XMR', 'USDT']
-        self.sell_pairs = ['AMP', 'ARDR', 'BCN', 'BCY', 'BELA', 'BLK', 'BTCD', 'BTM', 'BTS', 'BURST', 'CLAM', 'DASH', 'DCR', \
+        self.btc_sell_pairs = ['AMP', 'ARDR', 'BCN', 'BCY', 'BELA', 'BLK', 'BTCD', 'BTM', 'BTS', 'BURST', 'CLAM', 'DASH', 'DCR', \
                            'DGB', 'DOGE', 'EMC2', 'ETC', 'ETH', 'EXP', 'FCT', 'FLDC', 'FLO', 'GAME', 'GNO', 'GNT', 'GRC', \
                            'HUC', 'LBC', 'LSK', 'LTC', 'MAID', 'NAUT', 'NAV', 'NEOS', 'NMC', 'NOTE', 'NXC', 'OMNI', 'PASC', \
                            'PINK', 'POT', 'PPC', 'RADS', 'REP', 'RIC', 'SBD', 'SC', 'SJCX', 'STEEM', 'STR', 'STRAT', 'SYS', \
                            'VIA', 'VRC', 'VTC', 'XBC', 'XCP', 'XEM', 'XMR', 'XRP', 'XVC' 'ZEC']
+        self.eth_sell_pairs = ['GNT', 'ETC', 'GNO', 'STEEM', 'ZEC', 'LSK', 'REP']
+        self.xmr_sell_pairs = ['LTC', 'ZEC', 'NXT', 'DASH', 'MAID', 'BLK', 'BTCD', 'BCN']
+        self.usdt_sell_pairs = ['BTC', 'XRP', 'STR', 'LTC', 'ETH', 'ETC', 'NXT', 'ZEC', 'DASH', 'XMR', 'REP']
         self.margin_sell_pairs = ['BTS', 'CLAM', 'DASH', 'DOGE', 'ETH', 'FCT', 'LTC', 'MAID', 'STR', 'XMR', 'XRP']
         self.stop_signal = False
 
@@ -77,10 +80,9 @@ class LazyInterface:
         if self.buy_pair not in self.buy_pairs:
             self.set_buy_pair()
 
-        elif self.sell_pair not in self.sell_pairs:
-            self.set_sell_pair()
+        self.check_sell_pair()
 
-        else:
+        if self.currency_pair == None:
             self.set_currency_pair()
 
     # Main menu
@@ -153,18 +155,20 @@ class LazyInterface:
         amount = self.choose_amount()
         price = self.choose_price()
         rsp = api.set_buy_order(self.currency_pair, price, amount)
+        self.action_end_sentence()
 
     def margin_buy_order_form(self):
-         if self.buy_pair != 'BTC':
+        if self.buy_pair != 'BTC':
             self.buy_pair = 'BTC'
 
         if self.sell_pair not in self.margin_sell_pairs:
             self.set_margin_sell_pair()
-            
+
         self.margin_buy_order_sentence()
         amount = self.choose_amount()
         price = self.choose_price()
         rsp = api.set_margin_buy_order(self.currency_pair, price, amount)
+        self.action_end_sentence()
 
     def choose_amount(self):
         try:
@@ -322,19 +326,82 @@ class LazyInterface:
         else:
             self.set_buy_pair()
 
-        if self.sell_pair == None:
-            self.set_sell_pair()
+        self.check_sell_pair()
+        self.action_end_sentence()
 
     def set_sell_pair(self):
-        print "Choose the sel pair (", self.sell_pairs, ")"
+        self.sell_pair = 0
+        self.check_sell_pair()
+
+    def check_sell_pair(self):
+        if self.buy_pair == 'BTC':
+            if self.sell_pair not in self.btc_sell_pairs:
+                self.set_btc_sell_pair()
+
+        if self.buy_pair == 'ETH':
+            if self.sell_pair not in self.eth_sell_pairs:
+                self.set_eth_sell_pair()
+
+        if self.buy_pair == 'XMR':
+            if self.sell_pair not in self.xmr_sell_pairs:
+                self.set_xmr_sell_pair()
+
+        if self.buy_pair == 'USDT':
+            if self.sell_pair not in self.usdt_sell_pairs:
+                self.set_usdt_sell_pair()
+
+
+    def set_btc_sell_pair(self):
+        print "Choose the sell pair (", self.btc_sell_pairs, ")"
         choice = raw_input(" >>  ")
         choice = choice.upper()
         
-        if choice in self.sell_pairs:
+        if choice in self.btc_sell_pairs:
             self.sell_pair = choice
         else:
-            self.set_sell_pair()
+            self.set_btc_sell_pair()
+
         self.set_currency_pair()
+        self.action_end_sentence()
+
+    def set_eth_sell_pair(self):
+        print "Choose the sell pair (", self.eth_sell_pairs, ")"
+        choice = raw_input(" >>  ")
+        choice = choice.upper()
+        
+        if choice in self.eth_sell_pairs:
+            self.sell_pair = choice
+        else:
+            self.set_eth_sell_pair()
+
+        self.set_currency_pair()
+        self.action_end_sentence()
+
+    def set_xmr_sell_pair(self):
+        print "Choose the sell pair (", self.xmr_sell_pairs, ")"
+        choice = raw_input(" >>  ")
+        choice = choice.upper()
+        
+        if choice in self.xmr_sell_pairs:
+            self.sell_pair = choice
+        else:
+            self.set_xmr_sell_pair()
+
+        self.set_currency_pair()
+        self.action_end_sentence()
+
+    def set_usdt_sell_pair(self):
+        print "Choose the sell pair (", self.usdt_sell_pairs, ")"
+        choice = raw_input(" >>  ")
+        choice = choice.upper()
+        
+        if choice in self.usdt_sell_pairs:
+            self.sell_pair = choice
+        else:
+            self.set_usdt_sell_pair()
+
+        self.set_currency_pair()
+        self.action_end_sentence()
 
     def set_margin_sell_pair(self):
         print "Choose the margin sell pair (", self.margin_sell_pairs, ")"
@@ -345,11 +412,14 @@ class LazyInterface:
             self.sell_pair = choice
         else:
             self.set_margin_sell_pair()
+
         self.set_currency_pair()
+        self.action_end_sentence()
 
     def set_currency_pair(self):
         self.currency_pair = self.buy_pair, "_", self.sell_pair
         self.currency_pair = str(self.currency_pair)
+
         for ch in ["'", ",", " ", "(", ")"]:
             if ch in self.currency_pair:
                 self.currency_pair = self.currency_pair.replace(ch, "")
@@ -361,7 +431,7 @@ class LazyInterface:
     # Exit program
     def exit(self):
         self.stop_signal = True
-        self.sys.exit()
+        sys.exit(0)
 
     def sell_order_sentence(self):
         print "------------------------------------------------------------------------------------------------------------------------"
